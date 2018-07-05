@@ -4,7 +4,7 @@
 # @Author: Xuesheng Bian
 # @Email: xbc0809@gmail.com
 # @Date  : 2018/7/3 10:22
-# @Desc  : 
+# @Desc  :
 
 import torch
 import torch.nn as nn
@@ -19,7 +19,8 @@ import os
 class upsample(nn.Module):
     def __init__(self, in_channel, kernel, stride, padding):
         super(upsample, self).__init__()
-        self.conv = nn.ConvTranspose2d(in_channel, in_channel // 2, kernel, stride, padding)
+        self.conv = nn.ConvTranspose2d(
+            in_channel, in_channel // 2, kernel, stride, padding)
         self.dropout = nn.Dropout2d()
         self.bn = nn.BatchNorm2d(in_channel // 2)
         self.relu = nn.LeakyReLU(0.2)
@@ -59,7 +60,7 @@ class Discriminator(nn.Module):
     def __init__(self, in_channel, kernel, stride, padding=0):
         """Constructor for Distriminator"""
         super(Discriminator, self).__init__()
-        self.conv_1 = conv_layer(in_channel, 32, kernel, stride, padding)
+        self.conv_1 = conv_layer(in_channel, 32, kernel + 2, stride, padding)
         self.conv_2 = conv_layer(32, 64, kernel, 2, padding)
         self.conv_3 = conv_layer(64, 128, kernel, stride, padding)
         self.conv_4 = conv_layer(128, 256, kernel, 2, padding)

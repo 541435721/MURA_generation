@@ -1,10 +1,10 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
-# @File  : normal_GAN_2_modified_4.py
+# @File  : normal_GAN_for_CT_2.py
 # @Author: Xuesheng Bian
 # @Email: xbc0809@gmail.com
-# @Date  : 2018/7/2 22:54
-# @Desc  : all Leaky_relu
+# @Date  : 2018/7/5 13:48
+# @Desc  : 
 
 import torch
 import torch.nn as nn
@@ -157,8 +157,8 @@ if __name__ == '__main__':
     count = 0
     ##########################
 
-    data = np.load('x_ray_resized_equal_good_shape.npy')[:, np.newaxis, ...] / 255 * 2 - 1
-    summary = tensorboardX.SummaryWriter('./normal_GAN_log_2_modified_4')
+    data = np.load('CT_lung_64.npy')[:, np.newaxis, ...] * 2 - 1
+    summary = tensorboardX.SummaryWriter('./normal_GAN_for_CT_2')
     for epoch in range(5000):
         out_img = None
         G_loss = 0
@@ -214,6 +214,7 @@ if __name__ == '__main__':
         summary.add_image('fake_image', fake_img.cpu(), epoch)
         summary.add_image('real_image', real_img.cpu(), epoch)
 
-        torch.save(G.state_dict(), 'params_G_2_modified_4.pkl')
-        torch.save(D.state_dict(), 'params_D_2_modified_4.pkl')
+        torch.save(G.state_dict(), 'params_G_normal_GAN_for_CT_2.pkl')
+        torch.save(D.state_dict(), 'params_D_normal_GAN_for_CT_2.pkl')
     summary.close()
+    print()

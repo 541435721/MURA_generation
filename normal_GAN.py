@@ -20,9 +20,11 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 
 class upsample(nn.Module):
+
     def __init__(self, in_channel, kernel, stride, padding):
         super(upsample, self).__init__()
-        self.conv = nn.ConvTranspose2d(in_channel, in_channel // 2, kernel, stride, padding)
+        self.conv = nn.ConvTranspose2d(
+            in_channel, in_channel // 2, kernel, stride, padding)
         self.bn = nn.BatchNorm2d(in_channel // 2)
         self.lrelu = nn.ReLU()
 
@@ -63,8 +65,10 @@ class Generator(nn.Module):
         self.deconv_2 = upsample(in_channel * 10 // 2, kernel, stride, padding)
         self.deconv_3 = upsample(in_channel * 10 // 4, kernel, stride, padding)
         self.deconv_4 = upsample(in_channel * 10 // 8, kernel, stride, padding)
-        self.deconv_5 = upsample(in_channel * 10 // 16, kernel, stride, padding)
-        self.deconv_6 = upsample(in_channel * 10 // 32, kernel, stride, padding)
+        self.deconv_5 = upsample(
+            in_channel * 10 // 16, kernel, stride, padding)
+        self.deconv_6 = upsample(
+            in_channel * 10 // 32, kernel, stride, padding)
         self.conv = nn.Conv2d(in_channel * 10 // 64, out_channel, 1, 1)
 
     def forward(self, input):
@@ -161,7 +165,8 @@ if __name__ == '__main__':
         D_loss = 0
         for index in range(0, data.shape[0], batch_size):
             count += 1
-            real_sample = torch.from_numpy(data[index:index + batch_size, ...]).float()
+            real_sample = torch.from_numpy(
+                data[index:index + batch_size, ...]).float()
             z = torch.randn(real_sample.size(0), 200)  # noise
 
             D_fake_label = torch.zeros(z.size(0), 1)
@@ -185,7 +190,8 @@ if __name__ == '__main__':
                 real_pre = D(real_sample)
 
                 D_Optim.zero_grad()
-                D_loss = (torch.mean(loss_F(fake_pre, D_fake_label)) + torch.mean(loss_F(real_pre, D_real_label))) * 0.5
+                D_loss = (torch.mean(loss_F(fake_pre, D_fake_label)) +
+                          torch.mean(loss_F(real_pre, D_real_label))) * 0.5
                 D_loss.backward()
                 D_Optim.step()
 
@@ -199,12 +205,14 @@ if __name__ == '__main__':
 
             summary.add_scalar('gen_loss', G_loss.cpu().data.numpy(), count)
             summary.add_scalar('dis_loss', D_loss.cpu().data.numpy(), count)
-            print("Iteration:{0},g_loss:{1},d_loss:{2}".format(count, G_loss.cpu().data, D_loss.cpu().data))
+            print("Iteration:{0},g_loss:{1},d_loss:{2}".format(
+                count, G_loss.cpu().data, D_loss.cpu().data))
 
         G_Optim_scheduler.step()
         D_Optim_scheduler.step()
 
-        fake_img = vutils.make_grid((out_img + 1) / 2.0, normalize=True, scale_each=True)
+        fake_img = vutils.make_grid(
+            (out_img + 1) / 2.0, normalize=True, scale_each=True)
         summary.add_image('fake_image', fake_img.cpu(), epoch)
 
         torch.save(G.state_dict(), 'params_G.pkl')

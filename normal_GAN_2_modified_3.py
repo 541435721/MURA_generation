@@ -4,7 +4,7 @@
 # @Author: Xuesheng Bian
 # @Email: xbc0809@gmail.com
 # @Date  : 2018/7/2 20:00
-# @Desc  : add dropout and more channel
+# @Desc  : add dropout and more channel for G
 
 import torch
 import torch.nn as nn
@@ -144,8 +144,8 @@ if __name__ == '__main__':
     G_Optim = Adam(G.parameters(), 0.0002, betas=(0.5, 0.999))
     D_Optim = Adam(D.parameters(), 0.0002, betas=(0.5, 0.999))
 
-    G_Optim_scheduler = lr_scheduler.StepLR(G_Optim, step_size=15, gamma=0.95)
-    D_Optim_scheduler = lr_scheduler.StepLR(D_Optim, step_size=20, gamma=0.95)
+    G_Optim_scheduler = lr_scheduler.StepLR(G_Optim, step_size=200, gamma=0.95)
+    D_Optim_scheduler = lr_scheduler.StepLR(D_Optim, step_size=200, gamma=0.95)
 
     loss_F = nn.BCELoss()
 
@@ -153,13 +153,13 @@ if __name__ == '__main__':
 
     ##########################
     batch_size = 128
-    times_for_D = 1
+    times_for_D = 3
     count = 0
     ##########################
 
     data = np.load('x_ray_resized_equal_good_shape.npy')[:, np.newaxis, ...] / 255 * 2 - 1
     summary = tensorboardX.SummaryWriter('./normal_GAN_log_2_modified_3')
-    for epoch in range(500):
+    for epoch in range(5000):
         out_img = None
         G_loss = 0
         D_loss = 0
@@ -206,8 +206,8 @@ if __name__ == '__main__':
             summary.add_scalar('dis_loss', D_loss.cpu().data.numpy(), count)
             print("Iteration:{0},g_loss:{1},d_loss:{2}".format(count, G_loss.cpu().data, D_loss.cpu().data))
 
-        # G_Optim_scheduler.step()
-        # D_Optim_scheduler.step()
+        G_Optim_scheduler.step()
+        D_Optim_scheduler.step()
 
         fake_img = vutils.make_grid((out_img + 1) / 2.0, normalize=True, scale_each=True)
         real_img = vutils.make_grid((real_sample + 1) / 2.0, normalize=True, scale_each=True)

@@ -1,10 +1,10 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
-# @File  : normal_GAN_2_modified_4.py
+# @File  : normal_GAN_for_CT_1.py
 # @Author: Xuesheng Bian
 # @Email: xbc0809@gmail.com
-# @Date  : 2018/7/2 22:54
-# @Desc  : all Leaky_relu
+# @Date  : 2018/7/5 10:54
+# @Desc  : 
 
 import torch
 import torch.nn as nn
@@ -16,7 +16,7 @@ import torchvision.utils as vutils
 import os
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 
 class upsample(nn.Module):
@@ -25,7 +25,7 @@ class upsample(nn.Module):
         self.conv = nn.ConvTranspose2d(in_channel, in_channel // 2, kernel, stride, padding)
         self.dropout = nn.Dropout2d()
         self.bn = nn.BatchNorm2d(in_channel // 2)
-        self.relu = nn.LeakyReLU(0.2)
+        self.relu = nn.ReLU()
 
     def forward(self, input):
         out = input
@@ -45,7 +45,7 @@ class conv_layer(nn.Module):
         self.conv = nn.Conv2d(in_channel, out_channel, kernel, stride, padding)
         self.dropout = nn.Dropout2d()
         self.bn = nn.BatchNorm2d(out_channel)
-        self.lrelu = nn.LeakyReLU(0.2)
+        self.lrelu = nn.LeakyReLU()
 
     def forward(self, input):
         out = input
@@ -73,7 +73,7 @@ class Generator(nn.Module):
 
     def forward(self, input):
         out = input
-        out = F.leaky_relu(self.linear(out), 0.2)
+        out = F.relu(self.linear(out))
         out = out.view(-1, out.size(1), 1, 1)
         out = self.deconv_1(out)
         out = self.deconv_2(out)
@@ -157,8 +157,8 @@ if __name__ == '__main__':
     count = 0
     ##########################
 
-    data = np.load('x_ray_resized_equal_good_shape.npy')[:, np.newaxis, ...] / 255 * 2 - 1
-    summary = tensorboardX.SummaryWriter('./normal_GAN_log_2_modified_4')
+    data = np.load('CT_lung_64.npy')[:, np.newaxis, ...] * 2 - 1
+    summary = tensorboardX.SummaryWriter('./normal_GAN_for_CT_1')
     for epoch in range(5000):
         out_img = None
         G_loss = 0
@@ -214,6 +214,6 @@ if __name__ == '__main__':
         summary.add_image('fake_image', fake_img.cpu(), epoch)
         summary.add_image('real_image', real_img.cpu(), epoch)
 
-        torch.save(G.state_dict(), 'params_G_2_modified_4.pkl')
-        torch.save(D.state_dict(), 'params_D_2_modified_4.pkl')
+        torch.save(G.state_dict(), 'params_G_CT_1.pkl')
+        torch.save(D.state_dict(), 'params_D__CT_1.pkl')
     summary.close()

@@ -1,10 +1,10 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
-# @File  : normal_GAN_2_modified_4.py
+# @File  : normal_GAN_for_CT_3.py
 # @Author: Xuesheng Bian
 # @Email: xbc0809@gmail.com
-# @Date  : 2018/7/2 22:54
-# @Desc  : all Leaky_relu
+# @Date  : 2018/7/5 15:31
+# @Desc  : 
 
 import torch
 import torch.nn as nn
@@ -16,7 +16,7 @@ import torchvision.utils as vutils
 import os
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "7"
 
 
 class upsample(nn.Module):
@@ -104,13 +104,13 @@ class Discriminator(nn.Module):
     def __init__(self, in_channel, kernel, stride, padding=0):
         """Constructor for Distriminator"""
         super(Discriminator, self).__init__()
-        self.conv_1 = conv_layer(in_channel, 32, kernel, stride, padding)
+        self.conv_1 = conv_layer(in_channel, 32, kernel + 2, stride, padding)
         self.conv_2 = conv_layer(32, 64, kernel, 2, padding)
         self.conv_3 = conv_layer(64, 128, kernel, stride, padding)
         self.conv_4 = conv_layer(128, 256, kernel, 2, padding)
-        self.linear_1 = nn.Linear(256, 128)
-        self.bn_1 = nn.BatchNorm1d(128)
-        self.linear_2 = nn.Linear(128, 1)
+        self.linear_1 = nn.Linear(43264, 1024)
+        self.bn_1 = nn.BatchNorm1d(1024)
+        self.linear_2 = nn.Linear(1024, 1)
 
     def forward(self, input):
         out = input
@@ -118,8 +118,8 @@ class Discriminator(nn.Module):
         out = self.conv_2(out)
         out = self.conv_3(out)
         out = self.conv_4(out)
-        out = F.max_pool2d(out, out.size()[2:])
         out = out.view(out.size(0), -1)
+        # out = F.max_pool2d(out, out.size()[2:])
         out = F.leaky_relu(self.bn_1(F.dropout(self.linear_1(out))))  # add dropout and bn
         out = F.sigmoid(self.linear_2(out))
         return out
@@ -153,12 +153,12 @@ if __name__ == '__main__':
 
     ##########################
     batch_size = 128
-    times_for_D = 3
+    times_for_D = 1
     count = 0
     ##########################
 
-    data = np.load('x_ray_resized_equal_good_shape.npy')[:, np.newaxis, ...] / 255 * 2 - 1
-    summary = tensorboardX.SummaryWriter('./normal_GAN_log_2_modified_4')
+    data = np.load('CT_lung_64.npy')[:, np.newaxis, ...] * 2 - 1
+    summary = tensorboardX.SummaryWriter('./normal_GAN_for_CT_3')
     for epoch in range(5000):
         out_img = None
         G_loss = 0
@@ -214,6 +214,6 @@ if __name__ == '__main__':
         summary.add_image('fake_image', fake_img.cpu(), epoch)
         summary.add_image('real_image', real_img.cpu(), epoch)
 
-        torch.save(G.state_dict(), 'params_G_2_modified_4.pkl')
-        torch.save(D.state_dict(), 'params_D_2_modified_4.pkl')
+        torch.save(G.state_dict(), 'params_G_normal_GAN_for_CT_3.pkl')
+        torch.save(D.state_dict(), 'params_D_normal_GAN_for_CT_3.pkl')
     summary.close()
